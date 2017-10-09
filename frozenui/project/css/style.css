@@ -1,0 +1,18 @@
+._hidden{
+	display: none ;
+}
+._fix_center{
+	position: fixed;
+	top:50%;
+	left: 50%
+}
+#roading{
+	position: relative;
+}
+.main_container_initial{
+	margin-top:20px;
+}
+.item_sytle{
+    height: 66px;
+	padding: 5px;
+}

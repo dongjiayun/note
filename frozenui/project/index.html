@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta name="format-detection" content="telephone=no">
+        <title>FrozenUI Demo</title>
+        <script type="text/javascript" src="http://tajs.qq.com/stats?sId=37342703" charset="UTF-8"></script>
+        <link rel="stylesheet" href="../css/frozen.css">
+        <link rel="stylesheet" href="css/style.css">
+        <script src="../lib/zepto.min.js"></script>
+        <script src="../js/frozen.js"></script>
+        <script src="https://cdn.bootcss.com/react/15.4.2/react.min.js"></script>
+        <script src="https://cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
+        <script src="https://cdn.bootcss.com/babel-standalone/6.22.1/babel.min.js"></script>
+    </head>
+
+    <div id="app"></div>
+    <script type="text/babel">
+        function Footer(props) {
+            var footItem = props.footItem;
+            var list = footItem.map((footItem)=>
+                    <li  className="ui-border-r" id={footItem.idName}><div>{footItem.name}</div></li>
+            );
+            return(
+                    <footer className="ui-footer ui-footer-btn">
+                        <ul className="ui-tiled ui-border-t">
+                            {list}
+                        </ul>
+                    </footer>
+            );
+        }
+        function Header(props) {
+            return (
+                    <header className="ui-header ui-header-positive ui-border-b">
+                        <i className="ui-icon-return _hidden"></i>
+                        <h1>{props.title}</h1>
+                    </header>
+            );
+        }
+        var GetPost = React.createClass({
+            getInitialState: function() {
+                return {
+                    getAll:'',
+                };
+            },
+            componentWillMount:function () {
+                $.ajax({
+                    url:'http://localhost/basic/web/?r=test&fn=loadMore',
+                    data:{
+                        currentItem:this.props.currentPage,
+                        number:this.props.itemPerPage,
+                    },
+                    dataType:'json',
+                    async:true,
+                    success:function (data) {
+                           var data = data.info;
+                           var getAll = data.map((data)=>
+                                <li className="item_sytle ui-border-tb">
+                                    <p class="ui-txt-default">{data.id}</p>
+                                    <p class="ui-txt-default">{data.id}</p>
+                                </li>
+                        );
+                        this.setState({ getAll:getAll, });
+                    }.bind(this),
+                })
+            },
+            render:function(){
+//                var data = this.state.getAll.info;
+//                var getAll = data.map((data)=>
+//                        <li className="item_sytle ui-border-tb">
+//                            <p class="ui-txt-default">{data.id}</p>
+//                            <p class="ui-txt-default">{data.id}</p>
+//                        </li>
+//                );
+                var getAll = this.state.getAll;
+                return (
+                        <ul className="ui-list ui-list-link ui-border-tb" >{getAll}</ul>
+                )}
+
+        });
+
+        class Page extends React.Component{
+            constructor(props){
+                super(props);
+                var footItem = [
+                    {idName:'footer_homepage',name:'大厅'},
+                    {idName:'footer_my',name:'我的'}
+                    ]
+                this.state = {
+                    footItem:footItem,
+                    currentTitle:footItem[0].name,
+                    currentItem:1,
+                    itemPerPage:5,
+                }
+            }
+            render(){
+                return(
+                    <div>
+                        <Footer footItem = {this.state.footItem}/>
+                        <body>
+                            <Header title = {this.state.currentTitle}/>
+                            <section className="ui-container" id='main_screen'>
+                               <GetPost currentPage = {this.state.currentItem} itemPerPage = {this.state.itemPerPage}/>
+                            </section>
+                        </body>
+                    </div>
+                );
+            }
+        }
+        ReactDOM.render(
+              <Page/>,
+              document.getElementById('app')
+        );
+    </script>
+</html>
+    <!--<footer class="ui-footer ui-footer-btn">-->
+            <!--<ul class="ui-tiled ui-border-t">-->
+                <!--<li  class="ui-border-r" id='footer_homepage'><div>首页</div></li>-->
+                <!--<li  class="ui-border-r" id='footer_my'><div>我的</div></li>-->
+            <!--</ul>-->
+    <!--</footer>-->
+    <!---->
+    <!--<body ontouchstart>-->
+            <!--<header class="ui-header ui-header-positive ui-border-b">-->
+            <!--<i class="ui-icon-return _hidden"></i>-->
+            <!--<h1>首页</h1>-->
+            <!--</header>-->
+
+         <!--<section class="ui-container" id='main_screen'>-->
+             <!--&lt;!&ndash;文章列表 &ndash;&gt;-->
+              <!--<ul class="ui-list ui-list-link ui-border-tb" id='info'></ul>-->
+               <!--<button class='articleDataCache ui-btn-s'>button</button> -->
+              <!--&lt;!&ndash;文章详细 &ndash;&gt;-->
+              <!--<div class="ui-whitespace" id='articleDetail' hidden>-->
+                <!--<p></p>-->
+              <!--</div>-->
+               <!--&lt;!&ndash;我的&ndash;&gt;-->
+              <!--<div class="ui-whitespace" id='my' hidden>-->
+                     <!--<div class="ui-btn-wrap ">-->
+                        <!--<button class="ui-btn-lg" id='button_signin'>-->
+                           <!--注册-->
+                        <!--</button>-->
+                     <!--</div>-->
+
+                    <!--<div class="ui-btn-wrap">-->
+                        <!--<button class="ui-btn-lg ui-btn-primary" id='button_login'>-->
+                            <!--登录-->
+                        <!--</button>-->
+                    <!--</div>-->
+              <!--</div>-->
+              <!--&lt;!&ndash;用户界面 &ndash;&gt;-->
+               <!--<div class="ui-whitespace" id='mydetail' hidden>-->
+                     <!--<div class="ui-btn-wrap ">-->
+                        <!--<button class="ui-btn-lg" id='button_logout'>-->
+                           <!--登出-->
+                        <!--</button>-->
+                     <!--</div>-->
+              <!--</div>             -->
+              <!--&lt;!&ndash;注册界面 &ndash;&gt;-->
+              <!--&lt;!&ndash;登录界面 &ndash;&gt;-->
+                <!--<div class="demo-item" id='form_login' hidden>-->
+                    <!--<div class="demo-block">-->
+                        <!--<div class="ui-form ui-border-t">-->
+                            <!--<form action="#">-->
+                                <!--<div class="ui-form-item ui-form-item-pure ui-border-b">-->
+                                    <!--<input type="text" placeholder="邮箱" id='form_login_email'>-->
+                                    <!--<a href="#" class="ui-icon-close"></a>-->
+                                <!--</div>-->
+                                <!--<div class="ui-form-item ui-form-item-pure ui-border-b">-->
+                                    <!--<input type="password" placeholder="密码" id='form_login_password'>-->
+                                    <!--<a href="#" class="ui-icon-close"></a>-->
+                                <!--</div>-->
+                                <!--<div class="ui-form-item ui-form-item-r ui-border-b">-->
+                                    <!--<input type="text" placeholder="请输入验证码" id='form_login_vcode'>-->
+                                    <!--&lt;!&ndash; 若按钮不可点击则添加 disabled 类 &ndash;&gt;-->
+                                    <!--<button type="button" class="ui-border-l" id='refresh_code'><img src="http://localhost/basic/web/?r=site&fn=getCode"></button>-->
+                                    <!--<a href="#" class="ui-icon-close"></a>-->
+                                <!--</div>-->
+                            <!--</form>-->
+                        <!--</div>-->
+                            <!--<div class="ui-btn-wrap">-->
+                                <!--<button class="ui-btn-lg" id='form_button_login'>-->
+                                    <!--登录-->
+                                <!--</button>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                <!--</div>-->
+               <!---->
+              <!--<div id='roading' hidden>-->
+                <!--<div class="ui-loading-block show"  >-->
+                    <!--<div class='ui-loading-cnt '>-->
+                        <!--<i class="ui-loading-bright"></i>-->
+                        <!--<p>请稍后...</p>-->
+                    <!--</div>-->
+                <!--</div>-->
+              <!--</div>-->
+         <!--</section>-->
+    <!--</body>-->
+    <!--<script type="text/javascript">-->
+    <!--$(document).ready(function(){-->
+          <!--window.alert = function(str){-->
+          <!--return ;-->
+          <!--}-->
+    <!--})-->
+
+    <!--// 获取文章内容-->
+    <!--var articleData;-->
+    <!--var loginStatus;-->
+    <!--//刷新验证码-->
+    <!--function refreshCode(){-->
+       <!--$('#refresh_code').children().attr("src",'http://localhost/basic/web/?r=site&fn=getCode&'+Math.random());-->
+     <!--}-->
+     <!--//验证是否为游客-->
+     <!--function isLogin(){-->
+      <!--$('#roading').show();-->
+       <!--$.ajax({-->
+           <!--type: 'get',-->
+           <!--url: 'http://localhost/basic/web/index.php' ,-->
+           <!--data: {r:'site',fn:'checkLogin'} ,-->
+           <!--dataType: 'json',-->
+           <!--success:function(data){-->
+                <!--$('#roading').hide();-->
+                <!--loginStatus=data.code;-->
+           <!--},-->
+        <!--error:function(){       -->
+           <!--$('#roading').hide();-->
+            <!--$.tips({-->
+                <!--content:'请检查网络',-->
+                <!--stayTime:2000,-->
+                <!--type:"warn"-->
+            <!--})-->
+             <!--$("#info").html('获取资源失败');-->
+        <!--},-->
+       <!--})-->
+     <!--}-->
+    <!--$(document).ready(function(){-->
+         <!--isLogin();-->
+        <!--$('#roading').show();-->
+         <!--$.ajax({-->
+           <!--type: 'get',-->
+           <!--url: 'http://localhost/basic/web/index.php' ,-->
+           <!--data: {r:'post',fn:'getAll'} ,-->
+           <!--dataType: 'json',-->
+            <!--success: function(data){-->
+              <!--$('#roading').hide();-->
+            <!--console.log(data.info);  -->
+            <!--articleData=data;            //数据缓存-->
+            <!--//$('div').data('articleData',123);     -->
+            <!--//console.log( $('div').data('articleData'));-->
+            <!--$.each(data.info, function(i, item) {-->
+                    <!--// if(item.content.length>100){-->
+                    <!--//   var abstract=item.content.substring(0,100)+'...';-->
+                    <!--// }else{-->
+                    <!--//   var abstract=item.content;-->
+                    <!--// }-->
+            <!--$("#info").append(-->
+                    <!--"<li class='ui-border-t articleDetail' id='article"+i+"'>"+-->
+                    <!--"<div class='ui-list-img'>"+-->
+                       <!--" <span style='background-image:url(http://placeholder.qiniudn.com/200x136)'></span>"+-->
+                    <!--"</div>"+-->
+                    <!--"<div class='ui-list-info'>"+-->
+                        <!--"<h4 class='ui-nowrap'>"+item.title+"</h4>"+-->
+                        <!--"<p class='ui-nowrap'>"+item.content+"</p>"+-->
+                    <!--"</div>"+-->
+                <!--"</li>"-->
+                    <!--);-->
+            <!--$.tips({-->
+                <!--content:'刷新成功',-->
+                <!--stayTime:1000,-->
+                <!--type:"success"-->
+            <!--})-->
+        <!--});-->
+           <!--} ,-->
+        <!--error:function(){-->
+         <!---->
+           <!--$('#roading').hide();-->
+            <!--$.tips({-->
+                <!--content:'请检查网络',-->
+                <!--stayTime:2000,-->
+                <!--type:"warn"-->
+            <!--})-->
+             <!--$("#info").html('获取资源失败');-->
+        <!--},-->
+           <!---->
+<!--});-->
+    <!--});-->
+<!--//登录-->
+    <!--function login(email,password,vcode){-->
+        <!--$('#roading').show();-->
+         <!--$.ajax({-->
+           <!--type: 'get',-->
+           <!--url: 'http://localhost/basic/web/index.php' ,-->
+           <!--data: {r:'site',fn:'login',email:email,password:password,vcode:vcode} ,-->
+           <!--dataType: 'json',-->
+            <!--success: function(data){-->
+                  <!--$('#roading').hide();-->
+                  <!--var code=data.code;-->
+                  <!--if(code==0){-->
+                      <!--$.tips({-->
+                          <!--content:'登录成功',-->
+                          <!--stayTime:1000,-->
+                          <!--type:"success"-->
+                      <!--})-->
+                          <!--$('#main_screen').children().hide();-->
+                          <!--$('header > .ui-icon-return').hide();-->
+                          <!--$('#info').show();-->
+                          <!--isLogin();-->
+                  <!--}else{-->
+                      <!--$.tips({-->
+                          <!--content:data.msg,-->
+                          <!--stayTime:1000,-->
+                          <!--type:"warn"-->
+                      <!--})-->
+                      <!--refreshCode();-->
+                  <!--}-->
+           <!--} ,-->
+        <!--error:function(){       -->
+           <!--$('#roading').hide();-->
+            <!--$.tips({-->
+                <!--content:'请检查网络',-->
+                <!--stayTime:2000,-->
+                <!--type:"warn"-->
+            <!--})-->
+             <!--$("#info").html('获取资源失败');-->
+            <!--refreshCode();-->
+        <!--},-->
+           <!---->
+<!--});-->
+    <!--}-->
+
+    <!--//登出-->
+    <!--function logout(){-->
+        <!--$('#roading').show();-->
+         <!--$.ajax({-->
+           <!--type: 'get',-->
+           <!--url: 'http://localhost/basic/web/index.php' ,-->
+           <!--data: {r:'site',fn:'logout'} ,-->
+           <!--dataType: 'json',-->
+            <!--success: function(data){-->
+                  <!--$('#roading').hide();-->
+                  <!--var code=data.code;-->
+                  <!--if(code==0){-->
+                      <!--$.tips({-->
+                          <!--content:'登出成功',-->
+                          <!--stayTime:1000,-->
+                          <!--type:"success"-->
+                      <!--})-->
+                          <!--$('#main_screen').children().hide();-->
+                          <!--$('header > .ui-icon-return').hide();-->
+                          <!--$('#info').show();-->
+                          <!--isLogin();-->
+                  <!--}else{-->
+                      <!--$.tips({-->
+                          <!--content:data.msg,-->
+                          <!--stayTime:1000,-->
+                          <!--type:"warn"-->
+                      <!--})-->
+                      <!--refreshCode();-->
+                  <!--}-->
+           <!--} ,-->
+        <!--error:function(){       -->
+           <!--$('#roading').hide();-->
+            <!--$.tips({-->
+                <!--content:'请检查网络',-->
+                <!--stayTime:2000,-->
+                <!--type:"warn"-->
+            <!--})-->
+             <!--$("#info").html('获取资源失败');-->
+            <!--refreshCode();-->
+        <!--},-->
+           <!---->
+<!--});-->
+    <!--}-->
+    <!--//表单验证-->
+      <!---->
+        <!---->
+<!--//点击跳转-->
+     <!--// $('.articleDataCache').click(function(){-->
+     <!--//    console.log( articleData.info[0].title);-->
+     <!--//   //$(this).append( $('div').data('articleData'))-->
+     <!--// })-->
+     <!--//截取字符串-->
+     <!--function substr(str,length){-->
+          <!--var abstract;-->
+          <!--if(str.length>length){-->
+            <!--var abstract=str.substring(0,length)+'...';-->
+          <!--}else{-->
+            <!--var abstract=str;-->
+          <!--}-->
+          <!--return abstract;-->
+     <!--}-->
+     <!--// 点击文章显示详细-->
+     <!--$(document).on('click','.articleDetail',function(){-->
+         <!--//$(this).attr('id');-->
+         <!--var attrId=$(this).attr('id');-->
+         <!--attrId=attrId.replace(new RegExp('article'),'');-->
+         <!--$('#main_screen').children().hide();-->
+         <!--$('#articleDetail').show();-->
+         <!--$('#articleDetail > p').html(-->
+             <!--articleData.info[attrId].content-->
+          <!--);-->
+         <!--$('header > .ui-icon-return').show();-->
+         <!--$('header > h1').html(substr(articleData.info[attrId].title,10));-->
+     <!--})-->
+     <!--// 文章详细返回-->
+     <!--$(document).on('click','header > .ui-icon-return',function() {-->
+         <!--$('#main_screen').children().hide();-->
+         <!--$('header > .ui-icon-return').hide();-->
+         <!--$('header > h1').html('首页');-->
+         <!--$('#info').show();-->
+     <!--})-->
+     <!--//底部标签切换-->
+     <!--$(document).on('click','#footer_my',function() {-->
+         <!--$('#main_screen').children().hide();-->
+         <!--$('header > .ui-icon-return').hide();-->
+         <!--$('header > h1').html('我的'); -->
+         <!--isLogin();-->
+         <!--if(loginStatus==0){-->
+              <!--$('#mydetail').show();-->
+         <!--}else{ -->
+              <!--$('#my').show();-->
+         <!--}-->
+
+     <!--})-->
+     <!--//底部标签切换-->
+     <!--$(document).on('click','#footer_homepage',function() {-->
+         <!--$('#main_screen').children().hide();-->
+         <!--$('header > .ui-icon-return').hide();-->
+         <!--$('header > h1').html('首页');-->
+         <!--$('#info').show();-->
+     <!--})-->
+     <!--//登录按钮-->
+     <!--$(document).on('click','#button_login',function() {-->
+         <!--$('#main_screen').children().hide();-->
+         <!--$('header > .ui-icon-return').hide();-->
+         <!--$('header > h1').html('登录');-->
+         <!--$('#form_login').show();-->
+         <!--refreshCode();-->
+     <!--})-->
+     <!--//登录表单登录按钮-->
+     <!--$(document).on('click','#form_button_login',function() {-->
+         <!--var password=$('#form_login_password').val();-->
+         <!--var email=$('#form_login_email').val();-->
+         <!--var vcode=$('#form_login_vcode').val();-->
+         <!--login(email,password,vcode);-->
+         <!--isLogin();-->
+     <!--})-->
+     <!--//登录表单刷新验证码按钮-->
+
+      <!--$(document).on('click','#refresh_code',function() {-->
+           <!--refreshCode();-->
+     <!--}) -->
+     <!--//重填表单信息按钮-->
+      <!--$(document).on('click','.ui-icon-close',function() {-->
+           <!--$(this).siblings('input').val(''); -->
+     <!--}) -->
+     <!--//登出表单登出按钮-->
+     <!--$(document).on('click','#button_logout',function() {-->
+         <!--logout();-->
+         <!--isLogin();-->
+     <!--})-->
+
+    <!--</script>-->
+<!--</html>-->
