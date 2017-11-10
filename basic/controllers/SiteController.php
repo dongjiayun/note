@@ -170,18 +170,37 @@ class SiteController extends Controller
     	$email=$request->get('email');
     	$model->email=$email;
     	$model->password=$password;
-    	if($this->checkCode()==false){
-    		$result=array(
-    				'code'=>10002,
-    				'msg'=>'验证码错误',
-    		);
-    		return json_encode($result);
-    	}
+    	$token = $request->get('token');
+//     	if($this->checkCode()==false){
+//     		$result=array(
+//     				'code'=>10002,
+//     				'msg'=>'验证码错误',
+//     		);
+//     		return json_encode($result);
+//     	}
     	$query=$model->login();
     	if($query==true){
+    		if($token==''){
+    			$token = md5(rand(100000,999999));
+    			$cache = Yii::$app->cache;
+    			$id = Yii::$app->user->identity->id;
+    			$username = Yii::$app->user->identity->username;
+    			$password = Yii::$app->user->identity->password;
+    			$email = Yii::$app->user->identity->email;
+    			$info = [
+    					'id'=>$id,
+    					'username'=>$username,
+    					'password' =>$password,
+    					'email' =>$email,
+    			];
+    			$info = json_encode($info);
+    			$cache->set($token, $info);
+    		}	
     		$result=array(
     				'code'=>0,
     				'msg'=>'成功',
+    				'data'=>Yii::$app->user->identity->username,
+    				'token'=>$token,
     		);
     	}else{
     		$result=array(
@@ -270,8 +289,11 @@ class SiteController extends Controller
     		}
     }
     private function checkLogin(){
-    	@$isGuest=Yii::$app->user->isGuest;
-    	if($isGuest==true){
+    	$request=yii::$app->request;
+    	$token = $request->get('token');
+    	$cache=Yii::$app->cache;
+    	$info = $cache->get($token);
+    	if(!$info){
     		$result=array(
     				'code'=>1,
     				'msg'=>'未登录',

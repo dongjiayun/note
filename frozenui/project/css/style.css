@@ -16,3 +16,27 @@
     height: 66px;
 	padding: 5px;
 }
+.otherPage{
+    left:100%;
+	transition: 0.5s;
+	z-index: 999;
+}
+.otherPage.active{
+    left:0%;
+}
+._listHolder{
+	margin-bottom: 30px;
+}
+._headerTitle{
+	margin-left: 30px;
+}
+._textareaBox{
+	height: 330px;
+}
+._textareaInner{
+	height: 300px;
+}
+._cursor{
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+}

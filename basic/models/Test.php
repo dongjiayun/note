@@ -72,10 +72,9 @@ class Test extends \yii\db\ActiveRecord
     public function getAll0(){
     	return $this->hasMany(test::className(),['id'=>'id','name'=>'name']);
     }
-    public function loadMore($currentItem,$number){
+    public function loadMore($currentItem,$number,$id=''){
     	$query =Yii::$app->db;
-    	$userIdentity= Yii::$app->user->identity;
-        $userId = $userIdentity?$userIdentity->id:'';
+        $userId = $id;
     	$result=$query->createCommand('select * from post where id between :from and 999999999999 and (isPublic = 0 or auth = :userId )limit :limit', [
     			':from' =>$currentItem+1,
     			':limit' =>intval($number),

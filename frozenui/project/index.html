@@ -13,57 +13,166 @@
         <script src="https://cdn.bootcss.com/react/15.4.2/react.min.js"></script>
         <script src="https://cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
         <script src="https://cdn.bootcss.com/babel-standalone/6.22.1/babel.min.js"></script>
+        <script src="js/fastclick.js"></script>
+        <script src="js/js.cookie.js"></script>
     </head>
 
     <div id="app"></div>
     <script type="text/babel">
-        function Footer(props) {
-            var footItem = props.footItem;
-            var list = footItem.map((footItem)=>
-                    <li  className="ui-border-r" id={footItem.idName}><div>{footItem.name}</div></li>
-            );
-            return(
-                    <footer className="ui-footer ui-footer-btn">
-                        <ul className="ui-tiled ui-border-t">
-                            {list}
-                        </ul>
-                    </footer>
-            );
+        var _host = 'http://localhost/basic/web/';
+        var _page = '';
+        var _previousState = [];
+        var _currentPreviousStateIndex = -1;
+        var _isLogin= false;
+        var _token = '';
+
+        if(Cookies.get('token')){
+            _token = Cookies.get('token');
+        }
+
+        var Footer = React.createClass({
+            getInitialState:function () {
+                return {
+                    list:'',
+                }
+            },
+            componentWillMount:function () {
+                var footItem = this.props.footItem;
+                this.state.list = footItem.map((footItem)=>
+                        <li  className="ui-border-r" onClick={this.changeFooter.bind(this,footItem.id,footItem.name)}><div>{footItem.name}</div></li>
+                );
+            },
+            changeFooter:function (id,title) {
+                if(id==1){
+                    _previousState =_previousState.concat(_page.state);
+                    _currentPreviousStateIndex++;
+                   _page.checkLogStatus(title,id)
+                }else{
+                    _page.setState({
+                        currentTitle:title,
+                        currentPageId:id,
+                    });
+                }
+            },
+            render:function () {
+                return(
+                        <footer className="ui-footer ui-footer-btn">
+                            <ul className="ui-tiled ui-border-t">
+                                {this.state.list}
+                            </ul>
+                        </footer>
+                );
+            }
+        });
+        class tool{
+            creatTips(tips,time,type=0){
+                var random = Math.random()*999999;
+                random = parseInt(random);
+                if(type==0){
+                    $('#app').append("<div class='ui-poptips ui-poptips-success' id='tips"+random+"'> <div class='ui-poptips-cnt'><i></i>"+tips+"</div> </div>");
+                }else if(type==1){
+                    $('#app').append("<div class='ui-poptips ui-poptips-warn' id='tips"+random+"'> <div class='ui-poptips-cnt'><i></i>"+tips+"</div> </div>");
+                }
+                setTimeout(function () {
+                    $('#tips'+random).remove();
+                    this.delete;
+                },time)
+            }
         }
         function Header(props) {
+
+            function back() {
+                //console.log(_previousState);
+                _page.setState({
+                    currentTitle:_previousState[_currentPreviousStateIndex].currentTitle,
+                    currentPageId:_previousState[_currentPreviousStateIndex].currentPageId,
+                    currentPageDetail:_previousState[_currentPreviousStateIndex].currentPageDetail,
+               });
+                _currentPreviousStateIndex--;
+                //console.log(_previousState);
+                _page.previousStateSetter();
+            }
+            function add() {
+                _previousState =_previousState.concat(_page.state);
+                _currentPreviousStateIndex++;
+                _page.checkLogStatus('新日记',3);
+            }
             return (
-                    <header className="ui-header ui-header-positive ui-border-b">
-                        <i className="ui-icon-return _hidden"></i>
-                        <h1>{props.title}</h1>
+                    <header className="ui-header ui-header-positive ui-border-b ui-justify-flex ">
+                        {
+                          _page.state.currentPageId!=0&& _page.state.currentPageId!=1&&
+                          <i className="ui-icon-return " onClick={back}></i>
+                        }
+
+                        <h1 className="_headerTitle">{props.title}</h1>
+                        {
+                            _page.state.currentPageId==0&&
+                            <i className="ui-icon-add" onClick={add}></i>
+                        }
+
                     </header>
             );
         }
         var GetPost = React.createClass({
+
+
             getInitialState: function() {
+
                 return {
                     getAll:'',
+                    detailData:'',
                 };
             },
             componentWillMount:function () {
+
+
                 $.ajax({
-                    url:'http://localhost/basic/web/?r=test&fn=loadMore',
+                    url:_host+'?r=test&fn=loadMore',
                     data:{
                         currentItem:this.props.currentPage,
                         number:this.props.itemPerPage,
+                        token:_token,
                     },
                     dataType:'json',
                     async:true,
                     success:function (data) {
-                           var data = data.info;
-                           var getAll = data.map((data)=>
-                                <li className="item_sytle ui-border-tb">
-                                    <p class="ui-txt-default">{data.id}</p>
-                                    <p class="ui-txt-default">{data.id}</p>
-                                </li>
-                        );
-                        this.setState({ getAll:getAll, });
+                           if(data.info){
+                               var data = data.info;
+                               var getAll = data.map((data,index)=>
+                                       <li className="item_sytle ui-border-tb" onClick={this.getMoreDetail.bind(this,index)}>
+                                           <div className="ui-whitespace">
+                                               <p className="ui-txt-justify-one">{data.title}</p>
+                                               <p className="ui-nowrap-multi ui-whitespace">
+                                                   {data.content}
+                                               </p>
+                                           </div>
+                                       </li>
+                               );
+                               this.setState({
+                                   getAll:getAll,
+                                   detailData:data,
+                               });
+                           }else{
+                               var getAll = <p>暂无文章</p>
+                               this.setState({
+                                   getAll:getAll,
+                               });
+                           }
                     }.bind(this),
                 })
+            },
+            getMoreDetail:function (id) {
+                //var id = this.id;
+                var detailData = this.state.detailData[id];
+//                var id = document.getElementById();
+                //console.log(detailData);
+                _previousState =_previousState.concat(_page.state);
+                _currentPreviousStateIndex++;
+                _page.setState({
+                    currentTitle:detailData.title,
+                    currentPageId:2,
+                    currentPageDetail:detailData,
+                });
             },
             render:function(){
 //                var data = this.state.getAll.info;
@@ -75,24 +184,259 @@
 //                );
                 var getAll = this.state.getAll;
                 return (
-                        <ul className="ui-list ui-list-link ui-border-tb" >{getAll}</ul>
+                        <ul className="ui-list ui-list-link ui-border-tb _listHolder" >{getAll}</ul>
                 )}
 
         });
+        function NoteDetail() {
 
+            return(
+                        <section className="ui-container" id='main_screen'>
+                            {_page.state.currentPageDetail.content}
+                        </section>
+            );
+        }
+        var Login = React.createClass({
+            getInitialState:function () {
+                return{
+                    email:'',
+                    password:'',
+                }
+            },
+             email:function (e) {
+                  this.setState({
+                      email:e.target.value,
+                  })
+             },
+             password:function (e) {
+                 this.setState({
+                      password:e.target.value,
+                 })
+             },
+            login:function () {
+                    $.ajax({
+                        type: 'get',
+                        url: _host+'?r=site&fn=login',
+                        data: {email:this.state.email,password:this.state.password,token:_token} ,
+                        dataType: 'json',
+                        success: function(data) {
+                                if(data.code==0){
+                                    Cookies.set('token',data.token);
+                                    _token=data.token;
+                                    var username = data.data;
+                                    var tip = new tool;
+                                    tip.creatTips('欢迎您,'+username,1000);
+                                    _page.setState({
+                                        currentTitle:_page.state.footItem[0].name,
+                                        currentPageId:_page.state.footItem[0].id,
+                                        currentPageDetail:'',
+                                    });
+                                }else{
+                                    var tip = new tool;
+                                    tip.creatTips('邮箱或密码错误',1000,1);
+                                }
+                        }.bind(this)
+                    });
+            },
+              render:function () {
+                  return(
+                          <section className="ui-container" id='main_screen'>
+                              <div className="ui-form ui-border-t">
+                                  <form action="#">
+                                      <div className="ui-form-item ui-border-b">
+                                          <label>
+                                              邮箱
+                                          </label>
+                                          <input type="text" placeholder="请输入您注册的邮箱账号" value = {this.state.email} onChange = {this.email}/>
+
+                                      </div>
+                                      <div className="ui-form-item ui-border-b">
+                                          <label>
+                                              密码
+                                          </label>
+                                          <input type="password"  value = {this.state.password} onChange = {this.password}/>
+                                      </div>
+                                  </form>
+                              </div>
+                              <div className="ui-btn-wrap">
+                                  <button className="ui-btn-lg ui-btn-primary" onClick={this.login}>
+                                      登录
+                                  </button>
+                              </div>
+                          </section>
+                  );
+              }
+        });
+        var AddNote = React.createClass({
+               getInitialState:function () {
+                   return{
+                         content:'',
+                         title:'',
+                   }
+               },
+               add:function () {
+                   $.ajax({
+                       url:_host+'?r=test&fn=addNote',
+                       data:{
+                           content:this.state.content,
+                           title:this.state.title,
+                           token:_token,
+                       },
+                       dataType:'json',
+                       success:function (data) {
+                               if(data.code==0){
+                                   var tip = new tool;
+                                   tip.creatTips('添加成功',1000);
+                                   _page.setState({
+                                       currentTitle:_page.state.footItem[0].name,
+                                       currentPageId:_page.state.footItem[0].id,
+                                       currentPageDetail:'',
+                                   });
+                                   _currentPreviousStateIndex=-1;
+                                   _page.previousStateSetter();
+                               }else{
+                                   var tip = new tool;
+                                   tip.creatTips('请填写完整',1000);
+                               }
+                       }.bind(this)
+                   })
+               },
+
+               title:function (e) {
+                   this.setState({
+                          title:e.target.value,
+                   });
+               },
+               content:function (e) {
+                    this.setState({
+                        content:e.target.value,
+                    });
+                },
+               render:function () {
+                   return(
+                           <section className="ui-container" id='main_screen'>
+                               <div className="ui-form ui-border-t">
+                                   <form action="#">
+                                       <div className="ui-form-item ui-border-b">
+                                           <label>
+                                               标题
+                                           </label>
+                                           <input type="text" placeholder="文章标题" value = {this.state.title} onChange = {this.title}/>
+
+                                       </div>
+                                       <div className="ui-form-item ui-form-item-textarea ui-border-b _textareaBox">
+                                           <label>
+                                               正文
+                                           </label>
+                                           <textarea className="_textareaInner" placeholder="写点什么吧..." value = {this.state.content} onChange = {this.content}></textarea>
+                                       </div>
+                                   </form>
+                               </div>
+                               <div className="ui-btn-wrap">
+                                   <button className="ui-btn-lg ui-btn-primary" onClick={this.add}>
+                                       发表
+                                   </button>
+                               </div>
+                           </section>
+                   );
+               }
+        });
+        function RoadMore() {
+
+        }
+        var Mine = React.createClass({
+            logout:function () {
+                $.ajax({
+                    url:_host+'?r=site&fn=logout',
+                    dataType:'json',
+                    success:function (data) {
+                        if(data){
+                           if(data.code==0){
+                               Cookies.remove('token');
+                               _token = null;
+                               var tip = new tool;
+                               tip.creatTips('登出成功!',1000);
+                               _page.setState({
+                                   currentTitle:_page.state.footItem[0].name,
+                                   currentPageId:_page.state.footItem[0].id,
+                                   currentPageDetail:'',
+                               });
+                           }
+                        }
+                    }
+                });
+            },
+            render:function () {
+                return(
+                    <section className="ui-container" id='main_screen'>
+                        <div className="ui-btn-wrap">
+                            <button className="ui-btn-lg ui-btn-primary" onClick={this.logout}>
+                                登出
+                            </button>
+                        </div>
+                    </section>
+                );
+            }
+        });
         class Page extends React.Component{
             constructor(props){
                 super(props);
                 var footItem = [
-                    {idName:'footer_homepage',name:'大厅'},
-                    {idName:'footer_my',name:'我的'}
+                    {idName:'footer_homepage',name:'大厅',id:0},
+                    {idName:'footer_my',name:'我的',id:1},
+                    //{idName:'noteDetail',name:'详情',id:2},
                     ]
                 this.state = {
                     footItem:footItem,
                     currentTitle:footItem[0].name,
+                    currentPageId:footItem[0].id,
                     currentItem:1,
-                    itemPerPage:5,
+                    itemPerPage:10,
+                    currentPageDetail:'',
                 }
+                this.previousStateGetter = this.previousStateSetter.bind(this);
+            }
+            componentWillMount(){
+                _page = this;
+            }
+            componentDidMount(){
+                $(function() {
+                    FastClick.attach(document.body);
+                });
+            }
+            previousStateSetter() {
+                if(_currentPreviousStateIndex==-1){
+                    _previousState=[];
+                }
+
+            }
+            checkLogStatus(title,id){
+                $.ajax({
+                    url:_host+'?r=site&fn=checkLogin',
+                    data:{token:_token},
+                    dataType:'json',
+                    success:function (data) {
+                        if(data){
+                            if(data.code==0){
+                               _isLogin=true;
+                            }else{
+                                _isLogin=false;
+                            }
+                            if(_isLogin==false){
+                                this.setState({
+                                    currentTitle:'登录',
+                                    currentPageId:4,
+                                });
+                            }else{
+                                this.setState({
+                                    currentTitle:title,
+                                    currentPageId:id,
+                                });
+                            }
+                        }
+                    }.bind(this)
+                });
+
             }
             render(){
                 return(
@@ -100,11 +444,26 @@
                         <Footer footItem = {this.state.footItem}/>
                         <body>
                             <Header title = {this.state.currentTitle}/>
+                            {this.state.currentPageId == 0 &&
                             <section className="ui-container" id='main_screen'>
-                               <GetPost currentPage = {this.state.currentItem} itemPerPage = {this.state.itemPerPage}/>
+                                <GetPost currentPage={this.state.currentItem} itemPerPage={this.state.itemPerPage}/>
                             </section>
+                            }
+                            {this.state.currentPageId == 2 &&
+                                <NoteDetail/>
+                            }
+                            {this.state.currentPageId == 3 &&
+                                <AddNote/>
+                            }
+                            {this.state.currentPageId == 1 &&
+                                <Mine/>
+                            }
+                            {this.state.currentPageId == 4 &&
+                                <Login/>
+                            }
                         </body>
                     </div>
+
                 );
             }
         }

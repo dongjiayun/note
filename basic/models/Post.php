@@ -78,7 +78,9 @@ class Post extends \yii\db\ActiveRecord
     			$auth=$user;
     			$this->create_time = time();
     			$this->update_time = time();
-    			$this->auth = $auth;	
+    			if(!$this->auth){
+    				$this->auth = $auth;
+    			}	
     		}
     		else 
     		{
