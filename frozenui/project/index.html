@@ -8,8 +8,7 @@
         <script type="text/javascript" src="http://tajs.qq.com/stats?sId=37342703" charset="UTF-8"></script>
         <link rel="stylesheet" href="../css/frozen.css">
         <link rel="stylesheet" href="css/style.css">
-        <script src="../lib/zepto.min.js"></script>
-        <script src="../js/frozen.js"></script>
+        <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
         <script src="https://cdn.bootcss.com/react/15.4.2/react.min.js"></script>
         <script src="https://cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
         <script src="https://cdn.bootcss.com/babel-standalone/6.22.1/babel.min.js"></script>
@@ -25,6 +24,7 @@
         var _currentPreviousStateIndex = -1;
         var _isLogin= false;
         var _token = '';
+        var _mainList='';
 
         if(Cookies.get('token')){
             _token = Cookies.get('token');
@@ -79,6 +79,11 @@
                 },time)
             }
         }
+        class newPage{
+            createPage(){
+
+            }
+        }
         function Header(props) {
 
             function back() {
@@ -120,16 +125,20 @@
 
                 return {
                     getAll:'',
-                    detailData:'',
+                    detailData:[],
+                    currentPage:this.props.currentPage,
                 };
             },
-            componentWillMount:function () {
+            componentDidMount:function () {
+                this.getPost(this.state.currentPage,0);
+            },
+            getPost:function (page,isFirst) {
 
-
+                _mainList = this;
                 $.ajax({
                     url:_host+'?r=test&fn=loadMore',
                     data:{
-                        currentItem:this.props.currentPage,
+                        currentItem:page,
                         number:this.props.itemPerPage,
                         token:_token,
                     },
@@ -138,7 +147,11 @@
                     success:function (data) {
                            if(data.info){
                                var data = data.info;
-                               var getAll = data.map((data,index)=>
+                               var theLastId = data[data.length-1].id;
+                               this.setState({currentPage:theLastId});
+                               data = this.state.detailData.concat(data);
+                               this.setState({detailData:data,});
+                               var getAll = this.state.detailData.map((data,index)=>
                                        <li className="item_sytle ui-border-tb" onClick={this.getMoreDetail.bind(this,index)}>
                                            <div className="ui-whitespace">
                                                <p className="ui-txt-justify-one">{data.title}</p>
@@ -150,13 +163,21 @@
                                );
                                this.setState({
                                    getAll:getAll,
-                                   detailData:data,
                                });
+                               if(isFirst==1){
+                                   var tip = new tool;
+                                   tip.creatTips('加载成功',1000);
+                               }
                            }else{
-                               var getAll = <p>暂无文章</p>
-                               this.setState({
-                                   getAll:getAll,
-                               });
+                               if(isFirst==0){
+                                   var getAll = <p>暂无文章</p>
+                                   this.setState({
+                                       getAll:getAll,
+                                   });
+                               }else{
+                                   var tip = new tool;
+                                   tip.creatTips('暂无更多',1000,1);
+                               }
                            }
                     }.bind(this),
                 })
@@ -175,16 +196,10 @@
                 });
             },
             render:function(){
-//                var data = this.state.getAll.info;
-//                var getAll = data.map((data)=>
-//                        <li className="item_sytle ui-border-tb">
-//                            <p class="ui-txt-default">{data.id}</p>
-//                            <p class="ui-txt-default">{data.id}</p>
-//                        </li>
-//                );
+
                 var getAll = this.state.getAll;
                 return (
-                        <ul className="ui-list ui-list-link ui-border-tb _listHolder" >{getAll}</ul>
+                        <ul className="ui-list ui-list-link ui-border-tb" >{getAll}</ul>
                 )}
 
         });
@@ -341,9 +356,19 @@
                    );
                }
         });
-        function RoadMore() {
-
-        }
+        var LoadMore = React.createClass({
+               loadMore:function () {
+                   var currentPage = _mainList.state.currentPage;
+                   _mainList.getPost(currentPage,1);
+               },
+               render:function () {
+                   return(
+                               <button className="ui-btn-lg _listHolder" onClick={this.loadMore}>
+                                   加载更多
+                               </button>
+                   );
+               }
+        });
         var Mine = React.createClass({
             logout:function () {
                 $.ajax({
@@ -385,7 +410,7 @@
                     {idName:'footer_homepage',name:'大厅',id:0},
                     {idName:'footer_my',name:'我的',id:1},
                     //{idName:'noteDetail',name:'详情',id:2},
-                    ]
+                    ];
                 this.state = {
                     footItem:footItem,
                     currentTitle:footItem[0].name,
@@ -393,7 +418,7 @@
                     currentItem:1,
                     itemPerPage:10,
                     currentPageDetail:'',
-                }
+                };
                 this.previousStateGetter = this.previousStateSetter.bind(this);
             }
             componentWillMount(){
@@ -444,11 +469,10 @@
                         <Footer footItem = {this.state.footItem}/>
                         <body>
                             <Header title = {this.state.currentTitle}/>
-                            {this.state.currentPageId == 0 &&
-                            <section className="ui-container" id='main_screen'>
+                            <section className="ui-container " id='main_screen' hidden = {this.state.currentPageId == 0?false:true}>
                                 <GetPost currentPage={this.state.currentItem} itemPerPage={this.state.itemPerPage}/>
+                                <LoadMore/>
                             </section>
-                            }
                             {this.state.currentPageId == 2 &&
                                 <NoteDetail/>
                             }
@@ -473,6 +497,24 @@
         );
     </script>
 </html>
+<!--{this.state.currentPageId == 0 &&-->
+<!--<section className="ui-container" id='main_screen'>-->
+    <!--<GetPost currentPage={this.state.currentItem} itemPerPage={this.state.itemPerPage}/>-->
+        <!--<LoadMore/>-->
+<!--</section>-->
+<!--}-->
+<!--{this.state.currentPageId == 2 &&-->
+<!--<NoteDetail/>-->
+<!--}-->
+<!--{this.state.currentPageId == 3 &&-->
+<!--<AddNote/>-->
+<!--}-->
+<!--{this.state.currentPageId == 1 &&-->
+<!--<Mine/>-->
+<!--}-->
+<!--{this.state.currentPageId == 4 &&-->
+<!--<Login/>-->
+<!--}-->
     <!--<footer class="ui-footer ui-footer-btn">-->
             <!--<ul class="ui-tiled ui-border-t">-->
                 <!--<li  class="ui-border-r" id='footer_homepage'><div>首页</div></li>-->
